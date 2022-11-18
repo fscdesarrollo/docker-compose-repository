@@ -1,0 +1,21 @@
+version: '2.1'
+
+networks:
+  app-tier:
+    driver: bridge
+
+services:
+  cassandra-server:
+    image: bitnami/cassandra:latest
+    environment:
+      - CASSANDRA_TRANSPORT_PORT_NUMBER=7000
+    networks:
+      - app-tier
+    ports:
+     - 9042:9042
+     - 7199:7199
+ 
+  #for interactive or executing command in csql, execute script above on prompt:
+    #docker run -it --rm \
+    # --network app-tier \
+    # bitnami/cassandra:latest cqlsh --username cassandra --password cassandra cassandra-server

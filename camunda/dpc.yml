@@ -1,0 +1,10 @@
+version: "3.0"
+services:
+
+  camunda-platform:
+    image: camunda/camunda-bpm-platform:tomcat-latest
+    hostname: platform
+    ports:
+      - "8084:8080"
+    volumes:
+      - ./sqlserver-driver:/camunda/lib
