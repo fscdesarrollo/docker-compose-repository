@@ -1,5 +1,6 @@
 version: "3"
 services:
+
   kafka:
     hostname: kafka
     image: confluentinc/cp-enterprise-kafka:5.0.0
@@ -15,6 +16,7 @@ services:
       CONFLUENT_METRICS_REPORTER_TOPIC_REPLICAS: 1
     ports:
       - "9092:9092"
+
   schema-registry:
     image: confluentinc/cp-schema-registry:5.0.0
     environment:
@@ -25,11 +27,13 @@ services:
       - kafka
     ports:
       - '8081:8081'
+
   zookeeper:
     image: confluentinc/cp-zookeeper:5.0.0
     environment:
       ZOOKEEPER_CLIENT_PORT: "2181"
       ZOOKEEPER_TICK_TIME: "2000"
+
   connect:
     hostname: connect
     image: jcustenborder/kafka-connect-all
@@ -60,6 +64,7 @@ services:
       CONNECT_LOG4J_LOGGERS: 'org.reflections=ERROR'
     volumes:
       - './books.xsd:/books.xsd:ro'
+
   control-center:
     image: confluentinc/cp-enterprise-control-center:5.0.0
     depends_on:

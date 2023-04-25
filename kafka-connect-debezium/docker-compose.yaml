@@ -1,0 +1,52 @@
+version: '3'
+services:
+  zookeeper:
+    image: debezium/zookeeper:1.5
+    container_name: zookeeper
+    ports:
+      - "2181:2181"
+      - "2888:2888"
+      - "3888:3888"
+    restart: always
+
+  kafka:
+    image: debezium/kafka:1.5
+    container_name: kafka
+    ports:
+      - "9092:9092"
+    environment:
+      - KAFKA_ADVERTISED_LISTENERS=PLAINTEXT://host.docker.internal:9092
+      - ZOOKEEPER_CONNECT=zookeeper:2181
+    links:
+      - zookeeper:zookeeper
+    restart: always
+
+  sqlserver:
+    image: mcr.microsoft.com/mssql/server:2022-latest
+    container_name: sqlserver
+    hostname: sqlserver
+    environment:
+      - ACCEPT_EULA=Y
+      - MSSQL_SA_PASSWORD=Admin789
+      - MSSQL_AGENT_ENABLED=true
+      - MSSQL_PID=Standard
+    ports:
+      - "1433:1433"
+    restart: always
+
+  connect:
+    image: debezium/connect:1.5
+    container_name: connect
+    ports:
+      - "8083:8083"
+    environment:
+      - GROUP_ID=1
+      - CONFIG_STORAGE_TOPIC=my_connect_configs
+      - OFFSET_STORAGE_TOPIC=my_connect_offsets
+      - STATUS_STORAGE_TOPIC=my_connect_statuses
+      - BOOTSTRAP_SERVERS=PLAINTEXT://host.docker.internal:9092
+    links:
+      - zookeeper:zookeeper
+      - kafka:kafka
+      - sqlserver:sqlserver
+    restart: always
