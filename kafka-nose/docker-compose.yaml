@@ -1,0 +1,34 @@
+---
+version: '2'
+services:
+  zookeeper:
+    image: "confluentinc/cp-zookeeper:5.2.1"
+    ports:
+      - "2181:2181"
+    environment:
+      ZOOKEEPER_CLIENT_PORT: 2181
+      ZOOKEEPER_TICK_TIME: 2000
+
+# This has three listeners you can experiment with. 
+# INTERNAL_TRAFFIC for internal traffic on the Docker network
+# LOCALHOST_TRAFFIC for traffic from the Docker-host machine (`localhost`)
+# EXTERNAL_TRAFFIC for traffic from outside, reaching the Docker host on the DNS name `never-gonna-give-you-up`
+# Use 
+  hml-kafka-cp-0:
+    image: "confluentinc/cp-enterprise-kafka:5.2.1"
+    ports:
+      - '9092:9092'
+      - '29092:29092'
+    depends_on:
+      - zookeeper
+    environment:
+      KAFKA_BROKER_ID: 0
+      KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
+      KAFKA_LISTENERS: INTERNAL_TRAFFIC://:29094,LOCALHOST_TRAFFIC://:9092,EXTERNAL_TRAFFIC://:29092,
+      KAFKA_ADVERTISED_LISTENERS: INTERNAL_TRAFFIC://hml-kafka-cp-0:29094,LOCALHOST_TRAFFIC://localhost:9092,EXTERNAL_TRAFFIC://10.34.200.125:29092
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: INTERNAL_TRAFFIC:PLAINTEXT,LOCALHOST_TRAFFIC:PLAINTEXT,EXTERNAL_TRAFFIC:PLAINTEXT
+      KAFKA_INTER_BROKER_LISTENER_NAME: INTERNAL_TRAFFIC
+
+  kafkacat:
+    image: confluentinc/cp-kafkacat
+    command: sleep infinity
