@@ -1,0 +1,71 @@
+version: '3'
+services:
+
+  zookeeper:
+    image: confluentinc/cp-zookeeper:6.1.1
+    restart: always
+    ports:
+      - "2181:2181"
+      - "2888:2888"
+      - "3888:3888"
+    environment:
+      ZOOKEEPER_CLIENT_PORT: 2181
+
+  kafka:
+    image: confluentinc/cp-kafka:6.1.1
+    restart: always
+    depends_on:
+      - zookeeper
+    ports:
+      - "9093:9093"
+    environment:
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://host.docker.internal:9093
+      # KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://host.docker.internal:9093
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT:PLAINTEXT,PLAINTEXT_HOST:PLAINTEXT
+      KAFKA_INTER_BROKER_LISTENER_NAME: PLAINTEXT
+      KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+      KAFKA_JMX_PORT: 9308
+      KAFKA_JMX_HOSTNAME: host.docker.internal
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+
+  prometheus:
+    image: prom/prometheus:latest
+    volumes:
+      - ./prometheus.yml:/etc/prometheus/prometheus.yml
+    command:
+      - --config.file=/etc/prometheus/prometheus.yml
+    ports:
+      - "9090:9090"
+
+  grafana:
+    image: grafana/grafana:latest
+    ports:
+      - "3000:3000"
+    environment:
+      GF_SECURITY_ADMIN_USER: admin
+      GF_SECURITY_ADMIN_PASSWORD: admin
+    depends_on:
+      - prometheus
+
+  # jmx-exporter:
+  #   image: bitnami/jmx-exporter:latest
+  #   restart: always
+  #   depends_on:
+  #     - kafka
+  #   ports:
+  #     - "9091:9091"
+  #   volumes:
+  #     - ./jmx_exporter_config.yaml:/etc/jmx-exporter/jmx_exporter_config.yaml
+
+  jmx_exporter:
+    image: bitnami/kafka-exporter:1
+    ports:
+      - 9308:9308
+    depends_on:
+      - kafka
+    volumes:
+      - ./jmx_exporter_config.yml:/etc/jmx_exporter/jmx_exporter_config.yml
+    # command:
+    #   - "-javaagent:/etc/jmx_exporter/jmx_prometheus_javaagent.jar=9091:/etc/jmx_exporter/jmx_exporter_config.yml"
