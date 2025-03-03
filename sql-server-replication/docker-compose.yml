@@ -1,0 +1,40 @@
+version: '3.8'
+
+services:
+  DB_HML_SERVER_1:
+    image: mcr.microsoft.com/mssql/server:2019-latest
+    container_name: DB_HML_SERVER_1
+    environment:
+      ACCEPT_EULA: "Y"
+      SA_PASSWORD: "Admin789"
+    ports:
+      - "1440:1433"
+    networks:
+      - sql_network
+    volumes:
+      - DB_HML_SERVER_1_data:/var/opt/mssql
+    restart: always
+    command: /opt/mssql/bin/sqlservr
+
+  DB_HML_SERVER_2:
+    image: mcr.microsoft.com/mssql/server:2019-latest
+    container_name: DB_HML_SERVER_2
+    environment:
+      ACCEPT_EULA: "Y"
+      SA_PASSWORD: "Admin789"
+    ports:
+      - "1441:1433"
+    networks:
+      - sql_network
+    volumes:
+      - DB_HML_SERVER_2_data:/var/opt/mssql
+    restart: always
+    command: /opt/mssql/bin/sqlservr
+
+networks:
+  sql_network:
+    driver: bridge
+
+volumes:
+  DB_HML_SERVER_1_data:
+  DB_HML_SERVER_2_data:
